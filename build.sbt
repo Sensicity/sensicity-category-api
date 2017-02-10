@@ -21,8 +21,6 @@ libraryDependencies ++= {
   val circeVersion = "0.7.0"
   val shapelessVersion = "2.3.2"
   val catsVersion = "0.9.0"
-  val specs2Version = "3.8.8"
-  val specs2ScalaMockVersion = "3.5.0"
   val akkaCorsVersion = "0.1.11"
   val redisScalaVersion = "1.8.0"
   Seq(
@@ -44,13 +42,22 @@ libraryDependencies ++= {
     "com.chuusai" %% "shapeless" % shapelessVersion,
     // Cats functional programming library: https://github.com/typelevel/cats
     "org.typelevel" %% "cats" % catsVersion,
+    // Redis Scala - https://github.com/etaty/rediscala/pulls
+    "com.github.etaty" %% "rediscala" % redisScalaVersion
+  )
+}
+
+/************    TEST    *************/
+
+libraryDependencies ++= {
+  val specs2Version = "3.8.8"
+  val specs2ScalaMockVersion = "3.5.0"
+  Seq(
     // Specs2 Test Framework - https://etorreborre.github.io/specs2/
     "org.specs2" %% "specs2-core" % specs2Version % "test",
     "org.specs2" %% "specs2-matcher-extra" % specs2Version % "test",
     "org.specs2" %% "specs2-junit" % specs2Version % "test",
-    "org.scalamock" %% "scalamock-specs2-support" % specs2ScalaMockVersion % "test",
-    // Redis Scala - https://github.com/etaty/rediscala/pulls
-    "com.github.etaty" %% "rediscala" % redisScalaVersion
+    "org.scalamock" %% "scalamock-specs2-support" % specs2ScalaMockVersion % "test"
   )
 }
 
@@ -61,4 +68,11 @@ testOptions += Tests.Argument(TestFrameworks.JUnit, "-q", "-v", "-s", "-a")
 
 /************    WartRemover    *************/
 
-wartremoverErrors ++= Warts.allBut(Wart.FinalCaseClass)
+wartremoverErrors ++= Warts.allBut(
+  Wart.FinalCaseClass,
+  Wart.ImplicitParameter,
+  Wart.NonUnitStatements,
+  Wart.Overloading,
+  Wart.NoNeedForMonad,
+  Wart.PublicInference
+)
