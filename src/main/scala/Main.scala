@@ -15,7 +15,7 @@ object Main extends App with ServiceRouter {
   override implicit val system: ActorSystem = ActorSystem()
   override implicit val ec: ExecutionContext = system.dispatcher
   override implicit val materializer: ActorMaterializer = ActorMaterializer()
-  override def redisConnector: RedisClient = RedisClient(name = "Sensicity-category-api")
+  override def redisConnector: RedisClient = RedisClient(host = "redis", name = "Sensicity-category-api")
 
   private[this] val httpInterface: String = "0.0.0.0"
   private[this] val httpPort : Int = 9090

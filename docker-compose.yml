@@ -1,0 +1,13 @@
+api:
+  build: .
+  restart: always
+  ports:
+    - "9090:9090"
+  links:
+    - "cache-db:redis"
+
+cache-db:
+   image: redis:3.2.7-alpine
+   restart: always
+   volumes:
+    - ./data:/data
