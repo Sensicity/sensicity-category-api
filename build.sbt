@@ -74,5 +74,6 @@ wartremoverErrors ++= Warts.allBut(
   Wart.NonUnitStatements,
   Wart.Overloading,
   Wart.NoNeedForMonad,
-  Wart.PublicInference
+  Wart.PublicInference,
+  Wart.Nothing
 )
