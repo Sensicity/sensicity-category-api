@@ -5,6 +5,8 @@ api:
     - "9090:9090"
   links:
     - "cache-db:redis"
+  environment:
+    - SENSICITY_CATEGORY_REDIS_HOST=redis
 
 cache-db:
    image: redis:3.2.7-alpine
