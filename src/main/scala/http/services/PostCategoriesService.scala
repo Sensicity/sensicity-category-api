@@ -31,7 +31,7 @@ trait PostCategoriesService extends CirceSupport {
                 case list if list.size > 1 =>
                   val categoriesStringRep = list.mkString("[", ", ", "]")
                   s"The categories $categoriesStringRep are now attached to '${input.identifier}'"
-                case list =>
+                case _ =>
                   s"The category '${input.categories.head}' is now attached to '${input.identifier}'"
               }
             }
@@ -43,7 +43,7 @@ trait PostCategoriesService extends CirceSupport {
   }
 }
 
-object PostCategoriesService {
+private object PostCategoriesService {
 
   case class Input(identifier: String, categories: NonEmptyList[String])
 
