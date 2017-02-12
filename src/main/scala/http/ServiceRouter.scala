@@ -9,7 +9,7 @@ import akka.http.scaladsl.server._
 import akka.stream.Materializer
 import ch.megard.akka.http.cors.CorsDirectives._
 import de.heikoseeberger.akkahttpcirce.CirceSupport
-import http.services.PostCategoriesService
+import http.services.{DeleteCategoriesService, PostCategoriesService}
 import persistence.CategoryRepository
 import redis.RedisClient
 
@@ -17,7 +17,8 @@ import scala.concurrent.ExecutionContext
 
 trait ServiceRouter
   extends CirceSupport
-    with PostCategoriesService{
+    with PostCategoriesService
+    with DeleteCategoriesService {
 
   /**
     * Akka Actor system
@@ -76,6 +77,8 @@ trait ServiceRouter
       path("categories") {
         post {
           postCategoriesRoute
+        } ~ delete {
+          deleteCategoriesRoute
         }
       }
     }
