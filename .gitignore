@@ -246,3 +246,5 @@ Temporary Items
 
 ### Redis template
 *.rdb
+redisdbdata/
+
