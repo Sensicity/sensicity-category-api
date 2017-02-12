@@ -1,0 +1,83 @@
+{
+	"variables": [],
+	"info": {
+		"name": "Sensicity-Categories",
+		"_postman_id": "a9fee1ba-bd6d-3efe-4913-05afd6e006eb",
+		"description": "",
+		"schema": "https://schema.getpostman.com/json/collection/v2.0.0/collection.json"
+	},
+	"item": [
+		{
+			"name": "InsertCategories",
+			"request": {
+				"url": "http://localhost:9090/categories",
+				"method": "POST",
+				"header": [
+					{
+						"key": "Content-Type",
+						"value": "application/json",
+						"description": ""
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\"identifier\":\"xavi\", \"categories\":[\"CARS\", \"CATS\"]}"
+				},
+				"description": ""
+			},
+			"response": []
+		},
+		{
+			"name": "DeleteCategories",
+			"request": {
+				"url": "http://localhost:9090/categories",
+				"method": "DELETE",
+				"header": [
+					{
+						"key": "Content-Type",
+						"value": "application/json",
+						"description": ""
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\"identifier\":\"xavi\", \"categories\":[\"CARS\", \"CATS\"]}"
+				},
+				"description": ""
+			},
+			"response": []
+		},
+		{
+			"name": "GetCategories",
+			"request": {
+				"url": "http://localhost:9090/categories?identifier=xavi",
+				"method": "GET",
+				"header": [
+					{
+						"key": "Content-Type",
+						"value": "application/json",
+						"description": ""
+					}
+				],
+				"description": ""
+			},
+			"response": []
+		},
+		{
+			"name": "GetIdentifiers",
+			"request": {
+				"url": "http://localhost:9090/identifiers?category=CATS",
+				"method": "GET",
+				"header": [
+					{
+						"key": "Content-Type",
+						"value": "application/json",
+						"description": ""
+					}
+				],
+				"description": ""
+			},
+			"response": []
+		}
+	]
+}
