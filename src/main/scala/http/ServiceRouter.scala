@@ -9,7 +9,7 @@ import akka.http.scaladsl.server._
 import akka.stream.Materializer
 import ch.megard.akka.http.cors.CorsDirectives._
 import de.heikoseeberger.akkahttpcirce.CirceSupport
-import http.services.{DeleteCategoriesService, GetCategoriesService, PostCategoriesService}
+import http.services._
 import persistence.CategoryRepository
 import redis.RedisClient
 
@@ -19,7 +19,8 @@ trait ServiceRouter
   extends CirceSupport
     with PostCategoriesService
     with DeleteCategoriesService
-    with GetCategoriesService {
+    with GetCategoriesService
+    with GetIdentifiersFromCategoryService {
 
   /**
     * Akka Actor system
@@ -39,7 +40,7 @@ trait ServiceRouter
   /**
     * Client used for connecting to the database
     */
-  def redisConnector : RedisClient
+  def redisConnector: RedisClient
 
   /**
     * Connector to the category repository.
@@ -82,6 +83,10 @@ trait ServiceRouter
           deleteCategoriesRoute
         } ~ get {
           getCategoriesRoute
+        }
+      } ~ path("identifiers") {
+        get {
+          getIdentifiersFromCategory
         }
       }
     }
