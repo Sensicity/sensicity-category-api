@@ -1,7 +1,9 @@
 package persistence
 
-import redis.{ByteStringDeserializer, ByteStringSerializer, RedisClient}
+import cats.data.NonEmptyList
+import models.{Categories, CategoryIdentifiers}
 import redis.commands.TransactionBuilder
+import redis.{ByteStringDeserializer, ByteStringSerializer, RedisClient}
 
 import scala.concurrent.{ExecutionContext, Future}
 
@@ -27,8 +29,11 @@ class CategoryRepository(private val redisClient: RedisClient) {
     */
   def insertCategories(identifier: String,
                        category: String,
-                       otherCategories: String*)(implicit ec: ExecutionContext): Future[Unit] =
-    insertCategories(identifier, otherCategories :+ category)
+                       otherCategories: String*)(implicit ec: ExecutionContext): Future[Unit] = {
+
+    val categoriesToAdd = NonEmptyList.fromListUnsafe((otherCategories :+ category).toList)
+    insertCategories(identifier, categoriesToAdd)
+  }
 
   /**
     * Inserts a category into the Redis Database assigned to the input identifier.
@@ -39,15 +44,15 @@ class CategoryRepository(private val redisClient: RedisClient) {
     *         as soon as the petition is successfully processed.
     */
   def insertCategories(identifier: String,
-                       categories: Seq[String])(implicit ec: ExecutionContext): Future[Unit] = {
+                       categories: NonEmptyList[String])(implicit ec: ExecutionContext): Future[Unit] = {
 
     val transaction: TransactionBuilder = redisClient.transaction()
 
-    @inline val categoriesIdentifier: Seq[String] = categories.map(categoryKey)
+    @inline val categoriesIdentifier: NonEmptyList[String] = categories.map(categoryKey)
     @inline val persistedIdentifier: String = identifierKey(identifier)
 
     categoriesIdentifier.map(transaction.sadd[String](_, identifier))
-    transaction.sadd[String](persistedIdentifier, categories: _*)
+    transaction.sadd[String](persistedIdentifier, categories.toList: _*)
 
     transaction.exec().map(_ => Unit)
   }
@@ -63,9 +68,11 @@ class CategoryRepository(private val redisClient: RedisClient) {
     */
   def removeCategories(identifier: String,
                        category: String,
-                       otherCategories: String*)(implicit ec: ExecutionContext): Future[Unit] =
-    removeCategories(identifier, otherCategories :+ category)
+                       otherCategories: String*)(implicit ec: ExecutionContext): Future[Unit] = {
 
+    val categoriesToRemove = NonEmptyList.fromListUnsafe((otherCategories :+ category).toList)
+    removeCategories(identifier, categoriesToRemove)
+  }
   /**
     * Removes a set of categories assigned to an identifier.
     *
@@ -75,15 +82,15 @@ class CategoryRepository(private val redisClient: RedisClient) {
     *         otherwise as soon as the petition is successfully processed.
     */
   def removeCategories(identifier: String,
-                       categories: Seq[String])(implicit ec : ExecutionContext) : Future[Unit] = {
+                       categories: NonEmptyList[String])(implicit ec : ExecutionContext) : Future[Unit] = {
 
     val transaction: TransactionBuilder = redisClient.transaction()
 
-    @inline val categoriesIdentifier: Seq[String] = categories.map(categoryKey)
+    @inline val categoriesIdentifier: NonEmptyList[String] = categories.map(categoryKey)
     @inline val persistedIdentifier: String = identifierKey(identifier)
 
     categoriesIdentifier.map(transaction.srem[String](_, identifier))
-    transaction.srem[String](persistedIdentifier, categories: _*)
+    transaction.srem[String](persistedIdentifier, categories.toList: _*)
 
     transaction.exec().map(_ => Unit)
   }
@@ -95,8 +102,8 @@ class CategoryRepository(private val redisClient: RedisClient) {
     * @return a [[Set]] with all the categories.
     */
   def findCategoriesByIdentifier(identifier: String)
-                                (implicit ec : ExecutionContext): Future[Set[String]] =
-    redisClient.smembers[String](identifierKey(identifier)).map(_.toSet)
+                                (implicit ec : ExecutionContext): Future[Categories] =
+   redisClient.smembers[String](identifierKey(identifier)).map(_.toSet).map(Categories)
 
   /**
     * Obtains a [[Set]] with all the identifiers that have the input category assigned.
@@ -105,7 +112,7 @@ class CategoryRepository(private val redisClient: RedisClient) {
     * @return a [[Set]] with all the category identifiers.
     */
   def findIdentifiersByCategories(category: String)
-                                 (implicit ec : ExecutionContext): Future[Set[String]] =
-    redisClient.smembers[String](categoryKey(category)).map(_.toSet)
+                                 (implicit ec : ExecutionContext): Future[CategoryIdentifiers] =
+    redisClient.smembers[String](categoryKey(category)).map(_.toSet).map(CategoryIdentifiers)
 
 }
