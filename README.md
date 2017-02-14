@@ -9,7 +9,7 @@ There are 4 implemented services:
 - Add category(s) to identifier
 - Remove category(s) from identifier
 - Get category(s) from identifier
-- Get all identifiers having a category
+- Get all identifiers from a category
 
 ## Run the project using Docker
 
@@ -17,13 +17,13 @@ There are 4 implemented services:
 $ docker-compose up
 ```
 
-The application will now listen for connections at the port 9090.
+The application listens connections at the port 9090.
 
 ## App testing
 
 Redis must be running on localhost, for instance, using the command `redis-server`.
 
-If Redis is not running at localhost set the following environment variable to the redis host:
+If Redis is not running at localhost the following environment variable needs to be set:
 
   - `SENSICITY_CATEGORY_REDIS_HOST`
 
