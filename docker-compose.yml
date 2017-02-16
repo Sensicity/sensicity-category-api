@@ -9,7 +9,7 @@ api:
     - SENSICITY_CATEGORY_REDIS_HOST=redis
 
 cache-db:
-   image: redis:3.2.7-alpine
+   image: redis:3.2.8-alpine
    restart: always
    volumes:
     - ./redisdbdata:/data
