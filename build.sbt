@@ -15,9 +15,9 @@ scalacOptions ++= Seq(
 )
 
 libraryDependencies ++= {
-  val akkaVersion = "2.4.16"
-  val akkaHttpVersion = "10.0.3"
-  val akkaJsonSupportVersion = "1.12.0"
+  val akkaVersion = "2.4.17"
+  val akkaHttpVersion = "10.0.4"
+  val akkaJsonSupportVersion = "1.13.0"
   val circeVersion = "0.7.0"
   val shapelessVersion = "2.3.2"
   val catsVersion = "0.9.0"
@@ -50,7 +50,7 @@ libraryDependencies ++= {
 /************    TEST    *************/
 
 libraryDependencies ++= {
-  val specs2Version = "3.8.8"
+  val specs2Version = "3.8.9"
   val specs2ScalaMockVersion = "3.5.0"
   Seq(
     // Specs2 Test Framework - https://etorreborre.github.io/specs2/
@@ -73,7 +73,6 @@ wartremoverErrors ++= Warts.allBut(
   Wart.ImplicitParameter,
   Wart.NonUnitStatements,
   Wart.Overloading,
-  Wart.NoNeedForMonad,
   Wart.PublicInference,
   Wart.Nothing
 )

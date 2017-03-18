@@ -92,7 +92,7 @@ class CategoryRepositoryIntegrationSpec extends Specification {
             _ <- repository.insertCategories(identifier1, category2)
             endCategories <- repository.findCategoriesByIdentifier(identifier1)
             endCount <- redisConnector.dbsize()
-          } yield (initialCount != endCount) || !initialCategories.equals(endCategories)
+          } yield (initialCount !== endCount) || !initialCategories.equals(endCategories)
         }
         Await.result(hasSideEffects, timeout) must beFalse
       }
@@ -107,7 +107,7 @@ class CategoryRepositoryIntegrationSpec extends Specification {
             _ <- repository.removeCategories(identifier1, category4)
             endCategories <- repository.findCategoriesByIdentifier(identifier1)
             endCount <- redisConnector.dbsize()
-          } yield (initialCount != endCount) || !initialCategories.equals(endCategories)
+          } yield (initialCount !== endCount) || !initialCategories.equals(endCategories)
         }
         Await.result(hasSideEffects, timeout) must beFalse
       }

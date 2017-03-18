@@ -4,7 +4,7 @@ package services
 import akka.http.scaladsl.server.Directives._
 import akka.http.scaladsl.server._
 import cats.data.NonEmptyList
-import de.heikoseeberger.akkahttpcirce.CirceSupport
+import de.heikoseeberger.akkahttpcirce.ErrorAccumulatingCirceSupport
 import io.circe.generic.auto._
 import io.circe.syntax._
 import persistence.CategoryRepository
@@ -14,7 +14,7 @@ import scala.concurrent.ExecutionContext
 /**
   * Service used for attaching categories to an specific identifier.
   */
-trait PostCategoriesService extends CirceSupport {
+trait PostCategoriesService extends ErrorAccumulatingCirceSupport {
 
   implicit def ec: ExecutionContext
 
