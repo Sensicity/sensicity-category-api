@@ -2,7 +2,7 @@ package http.services
 
 import akka.http.scaladsl.server.Directives._
 import akka.http.scaladsl.server._
-import de.heikoseeberger.akkahttpcirce.CirceSupport
+import de.heikoseeberger.akkahttpcirce.ErrorAccumulatingCirceSupport
 import io.circe.generic.auto._
 import io.circe.syntax._
 import persistence.CategoryRepository
@@ -12,7 +12,7 @@ import scala.concurrent.ExecutionContext
 /**
   * Service used for querying for the identifiers from a category.
   */
-trait GetIdentifiersFromCategoryService extends CirceSupport {
+trait GetIdentifiersFromCategoryService extends ErrorAccumulatingCirceSupport {
 
   implicit def ec: ExecutionContext
 
