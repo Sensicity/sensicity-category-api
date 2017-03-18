@@ -20,7 +20,8 @@ trait ServiceRouter
     with PostCategoriesService
     with DeleteCategoriesService
     with GetCategoriesService
-    with GetIdentifiersFromCategoryService {
+    with GetIdentifiersFromCategoryService
+    with ListCategoriesService {
 
   /**
     * Akka Actor system
@@ -76,13 +77,17 @@ trait ServiceRouter
     */
   val routes: Route = {
     cors() {
-      path("categories") {
+      pathPrefix("categories") {
         post {
           postCategoriesRoute
         } ~ delete {
           deleteCategoriesRoute
         } ~ get {
           getCategoriesRoute
+        } ~ path("list") {
+          get {
+            listCategoriesRoute
+          }
         }
       } ~ path("identifiers") {
         get {

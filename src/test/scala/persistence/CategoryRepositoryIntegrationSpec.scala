@@ -125,6 +125,13 @@ class CategoryRepositoryIntegrationSpec extends Specification {
         Await.result(isExpectedOutput, timeout) must beTrue
       }
     }
+    "Lists all inserted categories as expected" in {
+      implicit ec: ExecutionContext => {
+        val categoriesQuery = repository.findAllInsertedCategories()
+        val expectedCategories = Set(category1, category2, category3, category4)
+        Await.result(categoriesQuery, timeout).categories must beEqualTo(expectedCategories)
+      }
+    }
     val category5 = "FOOTBALL"
     "Must work when removing mixed inserted/non-inserted categories " in {
       implicit ec: ExecutionContext => {
@@ -139,6 +146,13 @@ class CategoryRepositoryIntegrationSpec extends Specification {
         Await.result(isExpectedOutput, timeout) must beTrue
       }
     }
+    "The category list is updated when a category does not have assigned identifiers anymore" in {
+      implicit ec: ExecutionContext => {
+        val categoriesQuery = repository.findAllInsertedCategories()
+        val expectedCategories = Set(category2, category3, category4)
+        Await.result(categoriesQuery, timeout).categories must beEqualTo(expectedCategories)
+      }
+    }
     val identifier2 = "ID_2"
     "Returns an empty List when asking the categories of an non-existent identifier" in {
       implicit ec: ExecutionContext => {
@@ -148,7 +162,7 @@ class CategoryRepositoryIntegrationSpec extends Specification {
     }
     "Returns an empty List when asking the identifiers of an non-existent category" in {
       implicit ec: ExecutionContext => {
-        val query = repository.findIdentifiersByCategories(category5)
+        val query = repository.findIdentifiersByCategory(category5)
         Await.result(query, timeout).categories must beEqualTo(Set[String]())
       }
     }
@@ -171,8 +185,8 @@ class CategoryRepositoryIntegrationSpec extends Specification {
     }
     "Asking for the identifier from a category works as expected" in {
       implicit ec: ExecutionContext => {
-        val queryCategory1 = repository.findIdentifiersByCategories(category1)
-        val queryCategory2 = repository.findIdentifiersByCategories(category2)
+        val queryCategory1 = repository.findIdentifiersByCategory(category1)
+        val queryCategory2 = repository.findIdentifiersByCategory(category2)
 
         (Await.result(queryCategory1, timeout).categories must beEqualTo(Set(identifier2))) &&
           (Await.result(queryCategory2, timeout).categories must beEqualTo(Set(identifier1, identifier2)))

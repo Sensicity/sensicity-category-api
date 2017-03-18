@@ -2,9 +2,10 @@ package persistence
 
 import cats.data.NonEmptyList
 import models.{Categories, CategoryIdentifiers}
+import redis.RedisClient
 import redis.commands.TransactionBuilder
-import redis.{ByteStringDeserializer, ByteStringSerializer, RedisClient}
 
+import scala.collection.immutable.Seq
 import scala.concurrent.{ExecutionContext, Future}
 
 /**
@@ -17,6 +18,9 @@ class CategoryRepository(private val redisClient: RedisClient) {
 
   @inline
   private[this] def identifierKey(identifier: String): String = s"I|$identifier"
+
+  @inline
+  private[this] val categoryListKey: String = "categoryList"
 
   /**
     * Inserts a category into the Redis Database assigned to the input identifier.
@@ -51,7 +55,13 @@ class CategoryRepository(private val redisClient: RedisClient) {
     @inline val categoriesIdentifier: NonEmptyList[String] = categories.map(categoryKey)
     @inline val persistedIdentifier: String = identifierKey(identifier)
 
+    // Adds categories to the elements by category
     categoriesIdentifier.map(transaction.sadd[String](_, identifier))
+
+    // Adds categories to the category List
+    categories.map(transaction.sadd[String](categoryListKey, _))
+
+    // Adds category to identifier
     transaction.sadd[String](persistedIdentifier, categories.toList: _*)
 
     transaction.exec().map(_ => Unit)
@@ -73,6 +83,7 @@ class CategoryRepository(private val redisClient: RedisClient) {
     val categoriesToRemove = NonEmptyList.fromListUnsafe((otherCategories :+ category).toList)
     removeCategories(identifier, categoriesToRemove)
   }
+
   /**
     * Removes a set of categories assigned to an identifier.
     *
@@ -82,37 +93,63 @@ class CategoryRepository(private val redisClient: RedisClient) {
     *         otherwise as soon as the petition is successfully processed.
     */
   def removeCategories(identifier: String,
-                       categories: NonEmptyList[String])(implicit ec : ExecutionContext) : Future[Unit] = {
+                       categories: NonEmptyList[String])(implicit ec: ExecutionContext): Future[Unit] = {
 
     val transaction: TransactionBuilder = redisClient.transaction()
 
     @inline val categoriesIdentifier: NonEmptyList[String] = categories.map(categoryKey)
     @inline val persistedIdentifier: String = identifierKey(identifier)
 
-    categoriesIdentifier.map(transaction.srem[String](_, identifier))
-    transaction.srem[String](persistedIdentifier, categories.toList: _*)
-
-    transaction.exec().map(_ => Unit)
+    // If one of the categories is from the last identifier assigned in the category list,
+    // removes the list from the category list.
+    Future.sequence(
+      categories.map {
+        categoryToRemove => {
+          findIdentifiersByCategory(categoryToRemove).map(_.categories.toSeq).map {
+            case Seq(insertedElement) if insertedElement.equals(identifier) =>
+              transaction.srem(categoryListKey, categoryToRemove)
+            case _ => Unit
+          }
+        }
+      }.toList
+    ).map(
+      // Removes the category from the list of categories from an identifier.
+      _ => categoriesIdentifier.map(transaction.srem[String](_, identifier))
+    ).map(
+      // Removes the identifier from the list of category identifiers.
+      _ => transaction.srem[String](persistedIdentifier, categories.toList: _*)
+    ).flatMap(
+      // Executes the transaction.
+      _ => transaction.exec().map(_ => Unit)
+    )
   }
 
   /**
     * Obtains a [[Set]] with all the categories belonging to the input identifier.
     *
     * @param identifier that we want to use for retrieving the categories.
-    * @return a [[Set]] with all the categories.
+    * @return a [[Set]] with all the categories assigned to the input identifier.
     */
   def findCategoriesByIdentifier(identifier: String)
-                                (implicit ec : ExecutionContext): Future[Categories] =
-   redisClient.smembers[String](identifierKey(identifier)).map(_.toSet).map(Categories)
+                                (implicit ec: ExecutionContext): Future[Categories] =
+    redisClient.smembers[String](identifierKey(identifier)).map(_.toSet).map(Categories)
 
   /**
     * Obtains a [[Set]] with all the identifiers that have the input category assigned.
     *
     * @param category that we will use for obtaining the identifiers.
+    * @return a [[Set]] with all the identifiers having the input category.
+    */
+  def findIdentifiersByCategory(category: String)
+                               (implicit ec: ExecutionContext): Future[CategoryIdentifiers] =
+    redisClient.smembers[String](categoryKey(category)).map(_.toSet).map(CategoryIdentifiers)
+
+  /**
+    * Obtains a [[Set]] with all the category identifiers assigned to any user in the database.
+    *
     * @return a [[Set]] with all the category identifiers.
     */
-  def findIdentifiersByCategories(category: String)
-                                 (implicit ec : ExecutionContext): Future[CategoryIdentifiers] =
-    redisClient.smembers[String](categoryKey(category)).map(_.toSet).map(CategoryIdentifiers)
+  def findAllInsertedCategories()(implicit ec: ExecutionContext): Future[Categories] =
+    redisClient.smembers[String](categoryListKey).map(_.toSet).map(Categories)
 
 }
