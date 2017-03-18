@@ -23,7 +23,7 @@ trait DeleteCategoriesService extends ErrorAccumulatingCirceSupport {
     decodeRequest {
       entity(as[DeleteCategoriesService.Input]) {
         input => {
-          val query = categoryRepository.insertCategories(input.identifier, input.categories)
+          val query = categoryRepository.removeCategories(input.identifier, input.categories)
           onSuccess(query) {
             val outputMessage = {
               input.categories.toList match {

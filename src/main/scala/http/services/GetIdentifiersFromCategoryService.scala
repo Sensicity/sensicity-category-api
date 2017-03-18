@@ -23,7 +23,7 @@ trait GetIdentifiersFromCategoryService extends ErrorAccumulatingCirceSupport {
     parameters('category) {
       (category: String) =>
         onSuccess(
-          categoryRepository.findIdentifiersByCategories(category)
+          categoryRepository.findIdentifiersByCategory(category)
         ) {
           identifiers =>
             complete(
