@@ -1,6 +1,6 @@
 name := "sensicity-category-api"
 
-version := "0.0.1"
+version := "1.0.0-RC1"
 
 scalaVersion := "2.12.1"
 
