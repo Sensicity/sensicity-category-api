@@ -1,6 +1,7 @@
 package persistence
 
 import cats.data.NonEmptyList
+import cats.implicits._
 import models.{Categories, CategoryIdentifiers}
 import redis.RedisClient
 import redis.commands.TransactionBuilder
@@ -106,7 +107,7 @@ class CategoryRepository(private val redisClient: RedisClient) {
       categories.map {
         categoryToRemove => {
           findIdentifiersByCategory(categoryToRemove).map(_.categories.toSeq).map {
-            case Seq(insertedElement) if insertedElement.equals(identifier) =>
+            case Seq(insertedElement) if insertedElement === identifier =>
               transaction.srem(categoryListKey, categoryToRemove)
             case _ => Unit
           }

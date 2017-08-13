@@ -2,7 +2,7 @@ name := "sensicity-category-api"
 
 version := "1.0.0-RC1"
 
-scalaVersion := "2.12.1"
+scalaVersion := "2.12.3"
 
 // Scala compiler options
 scalacOptions ++= Seq(
@@ -15,13 +15,13 @@ scalacOptions ++= Seq(
 )
 
 libraryDependencies ++= {
-  val akkaVersion = "2.4.17"
-  val akkaHttpVersion = "10.0.4"
-  val akkaJsonSupportVersion = "1.13.0"
-  val circeVersion = "0.7.0"
+  val akkaVersion = "2.5.4"
+  val akkaHttpVersion = "10.0.9"
+  val akkaJsonSupportVersion = "1.17.0"
+  val circeVersion = "0.8.0"
   val shapelessVersion = "2.3.2"
   val catsVersion = "0.9.0"
-  val akkaCorsVersion = "0.1.11"
+  val akkaCorsVersion = "0.2.1"
   val redisScalaVersion = "1.8.0"
   Seq(
     // Akka: http://akka.io/
@@ -50,8 +50,8 @@ libraryDependencies ++= {
 /************    TEST    *************/
 
 libraryDependencies ++= {
-  val specs2Version = "3.8.9"
-  val specs2ScalaMockVersion = "3.5.0"
+  val specs2Version = "3.9.4"
+  val specs2ScalaMockVersion = "3.6.0"
   Seq(
     // Specs2 Test Framework - https://etorreborre.github.io/specs2/
     "org.specs2" %% "specs2-core" % specs2Version % "test",

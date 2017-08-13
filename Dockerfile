@@ -1,7 +1,7 @@
 FROM java:8-jdk-alpine
 
 # Prepares SBT environment
-ENV SBT_VERSION 0.13.13
+ENV SBT_VERSION 0.13.16
 ENV SBT_HOME /usr/local/sbt
 ENV PATH ${PATH}:${SBT_HOME}/bin
 
