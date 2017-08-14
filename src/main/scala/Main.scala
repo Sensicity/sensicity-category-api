@@ -2,7 +2,7 @@
 import akka.actor.ActorSystem
 import akka.http.scaladsl.Http
 import akka.stream.ActorMaterializer
-import com.typesafe.config.ConfigFactory
+import config.DatabaseConfig
 import http.ServiceRouter
 import redis.RedisClient
 
@@ -19,9 +19,12 @@ object Main extends App with ServiceRouter {
 
   // Initialize Redis database
 
-  private[this] def redisHost: String = ConfigFactory.load("redis.conf").getString("redis_host")
-  override val redisConnector: RedisClient = RedisClient(host = redisHost, name = "Sensicity-category-api")
-  println(s"Loaded Redis database located at '$redisHost'")
+  override val redisConnector: RedisClient =
+    RedisClient(host = DatabaseConfig.redisHost, name = DatabaseConfig.redisDbName)
+
+  println(
+    s"Connected to Redis database '${DatabaseConfig.redisDbName}' at '${DatabaseConfig.redisHost}'"
+  )
 
   // Initializes the HTTP services
 

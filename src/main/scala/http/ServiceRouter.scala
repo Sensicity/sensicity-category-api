@@ -1,15 +1,18 @@
 package http
 
 import akka.actor.ActorSystem
-import akka.http.scaladsl.model.HttpResponse
 import akka.http.scaladsl.model.StatusCodes._
+import akka.http.scaladsl.model._
 import akka.http.scaladsl.model.headers._
 import akka.http.scaladsl.server.Directives._
 import akka.http.scaladsl.server._
 import akka.stream.Materializer
+import cats.implicits._
 import ch.megard.akka.http.cors.scaladsl.CorsDirectives._
+import config.SecurityTokenConfig
 import de.heikoseeberger.akkahttpcirce.ErrorAccumulatingCirceSupport
 import http.services._
+import models.Error
 import persistence.CategoryRepository
 import redis.RedisClient
 
@@ -49,51 +52,95 @@ trait ServiceRouter
   private[http] lazy val categoryRepository = new CategoryRepository(redisConnector)
 
   /**
+    * Error message returned when a token authorization is not valid.
+    */
+  private[this] val unauthorizedErrorMessage: String =
+    Error(
+      code = "UNAUTHORIZED",
+      message = "The security token is not valid"
+    ).asJsonString
+
+  /**
     * [[RejectionHandler]] used for improving method rejections.
     */
-  implicit def rejectionHandler: RejectionHandler = {
-    RejectionHandler.newBuilder().handleAll[MethodRejection] {
+  implicit def rejectionHandler: RejectionHandler =
+    RejectionHandler
+      .newBuilder()
+      .handle {
+        case MissingHeaderRejection("auth_token") =>
+          complete(
+            HttpResponse(
+              status = BadRequest,
+              entity = Error(
+                code = "AUTH_TOKEN_REQUIRED",
+                message = "Authentication token is required"
+              ).asJsonString
+            )
+          )
+      }.handleAll[MethodRejection] {
       rejections =>
         val methods = rejections.map(_.supported)
         lazy val names = methods.map(_.name).mkString(", ")
 
-        respondWithHeader(Allow(methods)) {
-          options {
-            complete(s"Supported methods -> $names.")
-          } ~ {
-            complete(
-              HttpResponse(
-                status = MethodNotAllowed,
-                entity = s"HTTP method not allowed, supported methods: $names"
-              )
+        respondWithHeader(
+          Allow(methods)) {
+          complete(
+            HttpResponse(
+              status = MethodNotAllowed,
+              entity =
+                Error(
+                  code = "METHOD_NOT_ALLOWED",
+                  message = s"HTTP method not allowed, supported methods: $names"
+                ).asJsonString
             )
-          }
+          )
         }
     }.result()
-  }
+
+  private[this] def services =
+    pathPrefix("categories") {
+      post {
+        postCategoriesRoute
+      } ~ delete {
+        deleteCategoriesRoute
+      } ~ get {
+        getCategoriesRoute
+      } ~ path("list") {
+        get {
+          listCategoriesRoute
+        }
+      }
+    } ~ path("identifiers") {
+      get {
+        getIdentifiersFromCategory
+      }
+    }
 
   /**
     * Published API
     */
-  val routes: Route = {
-    cors() {
-      pathPrefix("categories") {
-        post {
-          postCategoriesRoute
-        } ~ delete {
-          deleteCategoriesRoute
-        } ~ get {
-          getCategoriesRoute
-        } ~ path("list") {
-          get {
-            listCategoriesRoute
+  val routes: Route =
+    SecurityTokenConfig.securityToken match {
+      case Some(token) =>
+        // If the security token is set, check the petition token
+        // is properly set before processing the request.
+        cors() {
+          headerValueByName("auth_token") {
+            headerValue =>
+              if (headerValue === token) {
+                services
+              } else {
+                complete(
+                  HttpResponse(
+                    status = Unauthorized,
+                    entity = unauthorizedErrorMessage
+                  )
+                )
+              }
           }
         }
-      } ~ path("identifiers") {
-        get {
-          getIdentifiersFromCategory
-        }
+      case _ => cors() {
+        services
       }
     }
-  }
 }
